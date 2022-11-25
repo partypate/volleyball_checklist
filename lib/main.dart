@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:volleyball_checklist/model/list_item.dart';
+import 'package:volleyball_checklist/data/list_items.dart';
+import 'package:volleyball_checklist/widget/list_item_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,6 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         // This is the theme of your application.
         primarySwatch: Colors.blue,
+        backgroundColor: Colors.blueGrey,
       ),
       home: const MyHomePage(title: 'Volleyball Checklist'),
     );
@@ -31,13 +35,53 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final listKey = GlobalKey<AnimatedListState>();
+  final List<ListItem> items = List.from(listItems);
+
   @override
   Widget build(BuildContext context) {
+    void removeItem(int index) {
+      final removeItem = items[index];
+      items.removeAt(index);
+      listKey.currentState!.removeItem(
+        index,
+        (context, animation) => ListItemWidget(
+          item: removeItem,
+          animation: animation,
+          onClicked: () {},
+        ),
+      );
+    }
+
+    void removeAllItems() {
+      for (var i = 0; i < items.length;) {
+        removeItem(i);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        centerTitle: true,
       ),
-      body: Text("Hallo"),
+      body: Container(
+        color: Colors.lightBlue,
+        child: AnimatedList(
+          key: listKey,
+          initialItemCount: items.length,
+          itemBuilder: (context, index, animation) => ListItemWidget(
+            item: items[index],
+            animation: animation,
+            onClicked: () => removeItem(index),
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.restore),
+        onPressed: () {
+          removeAllItems();
+        },
+      ),
     );
   }
 }
